@@ -16,10 +16,12 @@ from ImageFilters import Sequence
 from skimage.restoration import denoise_nl_means, estimate_sigma
 from mpl_toolkits import mplot3d
 
+import ImageFilters
+
 file_path = ""  # String with image path
 img = cv2.imread("")  # Image variable
 
-#  Elements for load, undo and redo options
+#  Elements for load_paths, undo and redo options
 img_list = []  # Image collection
 actual_loaded = 0  # Index of actual processing image
 
@@ -28,42 +30,51 @@ channel_to_save = False  # Used in hsv_processing_menu
 selected_channel = cv2.imread("")  # Actual loaded channel
 
 # Image container
-imageContainer = ic.ImageContainer()
+# imageContainer = ic.ImageContainer()
+
+# Class operations
+import Operations as Operation
+
+Function = Operation.Operations()
+
+import ImageFilters as fltrs
+
+filters = fltrs.ImageFilters()
+
+# Edit handler
+
 
 # list of functions used by user
 choices = clt.Choices()
-#new_path = r'C:\Users\Mario\Desktop\image_20.jpg'
+
+new_path = r'C:\Users\Mario\Desktop\image_20.jpg'
+
 
 # Main Menu
 def main_menu():
     global file_path
     global test
-    # choices.add_choice(perspective_correction.__name__)
-    # for function in choices.get_list():
-    # globals()[function]
+
+    # Load images using operations class
+    Function.load_images()
+    # Function.image_show()
 
     # Image container test
     # Load all images from selected path
-    if imageContainer.number_of_elements == 0:
-        imageContainer.load(r'E:\Data\Dokumenty\Studia\Praca\MGR\Serie\Test4', r'.jpg')### loading off
-        print(imageContainer.number_of_elements)
-        imageContainer.save()
-
-        # test = IF.Sequence()
-
-
-
-
-    else:
-        print("Images already loaded to the list...")
-        print(imageContainer.number_of_elements)
-        # imageContainer.save()
+    #    if imageContainer.number_of_elements == 0:
+    #        imageContainer.load_paths(r'E:\Data\Dokumenty\Studia\Praca\MGR\Serie\23-11-1', r'.jpg')  ### loading off
+    #        imageContainer.current_image_list.append(imageContainer.image_list[0])  ### load_paths image to show
+    #    else:
+    #        print("Images already loaded to the list...")
+    #        print(imageContainer.number_of_elements)
+    # imageContainer.save()
 
     while True:
         print("************Menu************")
 
         # No path info and manu content set
-        if file_path == "":
+        if False:  # file_path == "":
+
             print("***No file path defined!***")
 
             # Menu content set
@@ -72,9 +83,10 @@ x - Exit:"""
 
         else:
             content = """1 - Chose image path
-2 - Show an image     
+2 - Show image     
 3 - Image processing
 4 - Load NPY
+5 - Chose image from loaded list
 x - Exit:"""
 
         # Main options
@@ -83,12 +95,17 @@ x - Exit:"""
 
         if choice == "1":
             chose_path()
-        elif choice == "2" and file_path != "":
-            show_img(0)
-        elif choice == "3" and img.size != 0:
+
+        elif choice == "2":  # and file_path != "": # dorobic sprawdzanie jak obrazy nie sa zaladowane
+            # show_img(0)
+            Function.image_show()
+        elif choice == "3":  # and img.size != 0: # dorobic sprawdzanie jak obrazy nie sa zaladowane
             processing_menu()
         elif choice == "4":
             load_npy()
+        elif choice == "5":
+            # chose single image to edit
+            Function.image_to_edit()
         elif choice == "x" or choice == "X":
             menu_exit()
         else:
@@ -110,6 +127,7 @@ def processing_menu():
 7 - Blur
 8 - Skimage nl fast denoise
 9 - Gamma corectiono test
+T - Thinning
 B - Between values filter
 L - Binearisation
 P - Perspective correction
@@ -129,6 +147,7 @@ x - Back to Main Menu:"""
         choice = input(content)
 
         if choice == "1":
+            Function.image_show()
             show_img(0)  # Show original image
         elif choice == "2" and file_path != "":
             filter_denoising()
@@ -138,45 +157,60 @@ x - Back to Main Menu:"""
             normalise_img()
         elif choice == "5" and img.size != 0:
             show_histogram()
-        elif choice == "6" and img.size != 0:
-            filter_undistort()
+        elif choice == "6":  # and img.size != 0:
+            Function.add_to_stack(filters.filter_undistort(Function.actual_image()))
+            # filter_undistort()
         elif choice == "7" and img.size != 0:
             gausianblur()
         elif choice == "8" and img.size != 0:
             skinldenoise()
         elif choice == "9" and img.size != 0:
             gammacorection()
+        elif choice == "T" or choice == "t":
+            Function.add_to_stack(filters.thinning(Function.actual_image()))
         elif choice == "B" or choice == "b":
-            rgb_range_filter()
+            Function.add_to_stack(filters.rgb_range_filter(Function.actual_image()))
+            # rgb_range_filter()
         elif choice == "M" or choice == "m":
             morphology_filter()
         elif choice == "G" or choice == "g":
-            togray()
+            Function.add_to_stack(filters.togray(Function.actual_image()))
+            # togray()
         elif choice == "O" or choice == "o":
             gausianotsus()
         elif choice == "P" or choice == "p":
-            perspective_correction()
-        elif choice == "L" or choice == "l":
-            binearization()
+            Function.add_to_stack(filters.perspective_correction(Function.actual_image()))
+            # perspective_correction()
+        # elif choice == "L" or choice == "l":
+        # binearization()
         elif choice == "W" or choice == "w":
             save_picture()
-        elif choice == "R" or choice == "r":
+        elif choice == "R":
+            Function.dosequenceThreads()
 
-            imageContainer.dosequence(['barell', 'rgbrange', 'morph', 'perspective', 'thinning', 'binearization'])
+            # load_paths images from the list
+
+            # imageContainer.dosequence(['barell', 'rgbrange', 'morph', 'perspective', 'thinning', 'binearization'])
+
             # trzeba najpierd odfitrować morph, później korekcja perspektywy i dopieto thinning bo powstają rozlania
 
-            #try to save image matrix
-            imageContainer.save_matrix()
+            # try to save image matrix
+            Function.save_matrix()
 
-        elif choice == "V" or choice =="v":
-            visualisation()
+        elif choice == "V" or choice == "v":
+            Operation.visualisation()
+
+            # visualisation()
 
         elif choice == "u" or choice == "U":  # Undo last filter
-            undo_edit()
-        elif choice == "r" or choice == "R":  # Redo last filter
-            redo_edit()
+            Function.undo_edit()
+            # undo_edit()
+        elif choice == "r":  # Redo last filter
+            Function.redo_edit()
+            # redo_edit()
         elif choice == "s" or choice == "S":  # Show actual loaded image
-            show_img(actual_loaded)
+            Function.image_show()
+            # show_img(actual_loaded)
         elif choice == "x" or choice == "X":
             main_menu()
         else:
@@ -251,16 +285,17 @@ def perspective_correction():
     img_perspective = load_a_picture()
     # print(len(img_perspective.shape))
 
-    # tu jest problem z rozpakowaniem gdy mamy obraz rgb lub grayscale trzeba wykrywac czy jest i rozpakować do 2 lub 3 zmiennych
+    # tu jest problem z rozpakowaniem gdy mamy obraz rgb lub grayscale trzeba wykrywac czy jest i rozpakować do 2 lub
+    # 3 zmiennych
     if len(img_perspective.shape) == 3:
         rows, cols, ch = img_perspective.shape
     else:
         rows, cols = img_perspective.shape
 
     # Transformation matrix from getPerspectiveTransform
-    M = [[ 4.61386962e-01, -5.65776917e-01,  3.24411613e+02],
-        [ 7.19903651e-04,  3.07245847e-01,  8.75850391e+01],
-        [ 1.25418754e-06, -9.41057451e-04,  1.00000000e+00]]
+    M = [[4.61386962e-01, -5.65776917e-01, 3.24411613e+02],
+         [7.19903651e-04, 3.07245847e-01, 8.75850391e+01],
+         [1.25418754e-06, -9.41057451e-04, 1.00000000e+00]]
 
     undistorted = cv2.warpPerspective(np.float32(img_perspective), np.float32(M), (np.float32(cols), np.float32(rows)))
 
@@ -285,14 +320,15 @@ def menu_exit():
 
 #  Load NPY as image matrix
 def load_npy():
-    imageContainer.load_matrix()
+    Function.load_matrix()
+
 
 # Chose path for image
 def chose_path():
     global file_path  # String with image path
     global img  # Image variable
 
-    #  Elements for load, undo and redo options
+    #  Elements for load_paths, undo and redo options
     global img_list  # Image collection
     global actual_loaded  # Index of actual processing image
 
@@ -302,18 +338,28 @@ def chose_path():
     img_list = []
     actual_loaded = 0
 
-    global new_path
-    new_path = r'E:\Data\Dokumenty\Studia\Praca\MGR\Serie\CamCal\shuttertest\image-test3.jpg'  # C:\Users\Mario\Desktop\test1\image_26.jpg C:\Users\Mario\Desktop\PerspectiveTest\image1.jpg'  # fixed path for testing
+    new_path = ''
 
-    # input("""**Chose the path**
-    # Press c to cancel
-    # Please insert the path:""")
+    print("""**Chose the path**
+    Press x to cancel
+    """)
 
-    if new_path == "c" or new_path == "C":
-        main_menu()
-    else:
+    while True:
+        new_path = input('Please insert the path:')
+        if new_path == "x" or new_path == "X":
+            break
+        elif os.path.isdir(new_path):
+            Function.images_patch = new_path
+            Function.load_images()
+            break
+        else:
+            print("Path does not exist!")
+
+
+'''                
         if os.path.isfile(new_path):
             if new_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
+                
                 file_path = new_path
                 load_image()
             else:
@@ -323,6 +369,7 @@ def chose_path():
         else:
             file_path = ""
             print("The file path does not exist!")
+'''
 
 
 # Load image from the path
@@ -333,19 +380,19 @@ def load_image():
 
 
 # Binarisation
-def binearization():
-    img_binarization = load_a_picture()
-    # gray = cv2.cvtColor(img_binarization, cv2.COLOR_BGR2GRAY)
-    # bin = np.nonzero(gray)
-    # plt.plot(bin[1], bin[0], '.')
+# def binearization():
+#    img_binarization = load_a_picture()
+# gray = cv2.cvtColor(img_binarization, cv2.COLOR_BGR2GRAY)
+# bin = np.nonzero(gray)
+# plt.plot(bin[1], bin[0], '.')
 
-    # plt.plot(red_range = np.logical_and(bin[1] <= 537, arr[:, :, 0] <= rgb_range[0][1]))
-    # print(bin[1])
-    # print(bin[0])
+# plt.plot(red_range = np.logical_and(bin[1] <= 537, arr[:, :, 0] <= rgb_range[0][1]))
+# print(bin[1])
+# print(bin[0])
 
-    # plt.show()
-    # processing_menu()
-
+# plt.show()
+# processing_menu()
+"""
     if len(img_binarization.shape) >= 3:
         try:
             print("***converting to grayscale***")
@@ -378,6 +425,7 @@ def binearization():
             print("Can't plot this image...")
             input("press any key to back to processing menu...")
             processing_menu()
+"""
 
 
 # gamma corection
@@ -396,28 +444,16 @@ def gammacorection():
 def findrgbrange(image):
     from kneed import KneeLocator
     RGB = []
-
+    print(image.shape)
     # Computing the knees for rgb
     if len(image.shape) >= 3:
         try:
             print("***Colour RGB range detection***")
             for i in range(0, 3):
                 cdf3 = exposure.cumulative_distribution(image[:, :, i])
-                # print(i)
-                # print(image.shape)
-                # print(image[:, :, i].shape)
-                # print(cdf3)
 
-                # div = np.gradient(np.array([cdf3[0], cdf3[1]], dtype=float))
-                # print(div)
-                # plt.plot(div[0], div[1])
-                # plt.plot(cdf3[1], cdf3[0])
                 kneedle = KneeLocator(cdf3[1], cdf3[0], curve='convex', direction='increasing')
-                # kneedle.plot_knee()
 
-                # finding the knee
-                # kneedle = KneeLocator(-div[0][0], div[1][1], S=5, curve='convex', direction='increasing')
-                # kneedle.plot_knee()
                 print(round(kneedle.knee, 3))
                 RGB.append(int(kneedle.knee))
                 print(round(kneedle.knee_y, 3))
@@ -461,26 +497,12 @@ def show_img(image_number):
     plt.imshow(img_to_show)
     plt.show()
 
-    # plt.imshow(img_list[image_number])
-    # plt.show()
-
-    # cv2.namedWindow('image', cv2.WINDOW_KEEPRATIO)
-    # cv2.imshow('image', img_list[image_number])
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-
 
 # Show single image
 def show_one_img(image):
     # img_to_show = cv2.cvtColor(cv2.UMat(image), cv2.COLOR_BGR2RGB)
     plt.imshow(image)
     plt.show()
-
-
-#    cv2.namedWindow('image', cv2.WINDOW_NORMAL)
-#    cv2.imshow('image', image)
-#    cv2.waitKey(0)
-#    cv2.destroyAllWindows()
 
 
 #  Processing menu
@@ -610,22 +632,6 @@ def gausianotsus():
     processing_menu()
 
 
-# def hessian():
-#    from skimage.feature import hessian_matrix, hessian_matrix_eigvals
-#  morph_img = load_a_picture()
-
-# assume you have an image img
-
-#   hxx, hxy, hyy = hessian_matrix(img, sigma=3)
-#   i1, i2 = hessian_matrix_eigvals(hxx, hxy, hyy)
-#    show_one_img(i1)
-#  show_one_img(i2)
-# hog działa za wolno
-#        from skimage.feature import hog
-#     fd, hog_image = hog(morph_img, orientations=9, pixels_per_cell=(20, 20),
-#                          cells_per_block=(1, 1), visualize=True, multichannel=True)
-#      show_one_img(hog_image)
-
 #  Morphological operations can be used without denoising - but part of the data can be lost
 def morphology_filter():
     morph_img = load_a_picture()
@@ -644,9 +650,7 @@ def morphology_filter():
             #### TEST
             print("***converting to grayscale***")
 
-
             morph_for_ski = ((color.rgb2gray(morph_img)) * 255).astype(np.uint8)
-
 
             wth = white_tophat(morph_img)
 
@@ -704,84 +708,6 @@ def morphology_filter():
             add_to_stack(out_skel)
             show_img(actual_loaded)
             processing_menu()
-            # openinig = morphology.opening(image_binary)
-            # show_one_img(openinig)
-
-        # closeing = morphology.closing(openinig)
-        # closeing = morphology.closing(closeing)
-        # show_one_img(image_binary + 0.3 * closeing)
-
-        # out_thin = morphology.skeletonize(closeing)
-        # show_one_img(out_thin)
-
-        # img_dil = cv2.dilate(np.float32(image_binary), kernel_dil, iterations=5)
-
-        # out_thin = skeletonize(openinig, method='lee')
-
-        #  show_one_img(out_thin)
-        #  letsee = image_binary + out_thin
-        #   show_one_img(letsee)
-
-        # add_to_stack(out_thin)
-        # show_img(actual_loaded)
-        # processing_menu()
-
-        # show_one_img(distance)
-        # show_one_img(letsee)
-
-        # from scipy import ndimage as ndi
-
-        # mask = ndimage.binary_fill_holes(openinig).astype(int)
-        # show_one_img(mask)
-        # out_thin = morphology.skeletonize(mask)
-        # show_one_img(out_thin)
-
-        # skel, distance = morphology.medial_axis(closeing, return_distance=True)
-        # letsee = distance * skel
-
-        # show_one_img(distance)
-        # show_one_img(letsee)
-
-        # show_one_img(image_binary)
-        # img_dilation = cv2.dilate(np.float32(image_binary), kernel_dil, iterations=5)
-        # show_one_img(img_dilation)
-
-        # out_thin = morphology.thin(img_dilation)
-        # show_one_img(out_thin)
-
-        # img_erosion = cv2.erode(np.float32(img_dilation), kernel_ero, iterations=2)
-        # show_one_img(img_erosion)
-
-        # out_thin = morphology.thin(img_erosion)
-        # show_one_img(out_thin)
-
-        # plus = 0.3 * image_binary + img_dilation + 10 * out_thin
-        # show_one_img(plus)
-
-        # add_to_stack(out_thin)
-        # show_img(actual_loaded)
-        # processing_menu()
-
-        # img_dilation = cv2.dilate(np.float32(image_binary), kernel, iterations=2)
-        # show_one_img(img_dilation)
-        # img_erosion = cv2.erode(np.float32(img_dilation), kernel, iterations=1)
-        # show_one_img(img_erosion)
-        # img_dilation = cv2.dilate(img_erosion, kernel, iterations=2)
-        # show_one_img(img_dilation)
-        # img_dilation = cv2.dilate(img_dilation, kernel, iterations=2)
-        # show_one_img(img_dilation)
-        # img_erosion = cv2.erode(img_dilation, kernel, iterations=1)
-        # show_one_img(img_erosion)
-
-        # out_thin = morphology.thin(img_dilation)
-        # show_one_img(out_thin)
-
-        # out_skeletonize = morphology.skeletonize(img_dilation)
-        # show_one_img(out_skeletonize)
-
-        # add_to_stack(out_thin)
-        # show_img(actual_loaded)
-        # processing_menu()
 
         except ValueError:
             print(ValueError)
@@ -812,51 +738,11 @@ def morphology_filter():
             show_img(actual_loaded)
             processing_menu()
 
-            #           image_binary = morph_img > 0.001
-            #          out_thin = morphology.thin(image_binary)
-
-            #          openinig = morphology.opening(image_binary)
-            #          show_one_img(openinig)
-
-            #            out_thin = morphology.skeletonize(openinig)
-            #           show_one_img(out_thin)
-
-            #          letsee = 0.3 * image_binary * out_thin
-            #          show_one_img(letsee)
-
-            #         closeing = morphology.closing(openinig)
-            #          show_one_img(closeing)
-
-            #          out_thin = morphology.skeletonize(closeing)
-            #         show_one_img(out_thin)
-            #
-            #         letsee = 0.3 * image_binary * out_thin
-            #          show_one_img(letsee)
-
-            # add_to_stack(out_thin)
-            # show_img(actual_loaded)
-            processing_menu()
         except ValueError:
             print(ValueError)
             print("Can't plot this image...")
             input("press any key to back to processing menu...")
             processing_menu()
-
-    ##morph_for_ski = img_as_float(color.rgb2gray(morph_img))
-    # show_one_img(morph_for_ski)
-    ##image_binary = morph_for_ski > 0.01
-
-    # show_one_img(image_binary)
-    # out_skeletonize = morphology.skeletonize(image_binary)
-    # show_one_img(out_skeletonize)
-    ##out_thin = morphology.thin(image_binary)
-    # show_one_img(out_thin)
-
-    ##add_to_stack(out_thin)
-    ##show_img(actual_loaded)
-    ##processing_menu()
-
-    # morph_img = cv2.cvtColor(morph_img, cv2.COLOR_BGR2GRAY)
 
     morph_kernel = ([0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
                     [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
@@ -869,31 +755,6 @@ def morphology_filter():
                     [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
                     [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
                     [0, 0, 0, 0, 1, 1, 0, 0, 0, 0])  # np.ones((10, 10), np.uint8)
-
-    #               ([0, 0, 0, 0, 1, 0, 0, 0, 0],
-    #                [0, 0, 0, 0, 1, 0, 0, 0, 0],
-    #                [0, 0, 0, 1, 1, 1, 0, 0, 0],
-    #                [0, 0, 0, 1, 1, 1, 0, 0, 0],
-    #                [0, 0, 0, 1, 1, 1, 0, 0, 0],
-    #                [0, 0, 0, 1, 1, 1, 0, 0, 0],
-    #                [0, 0, 0, 1, 1, 1, 0, 0, 0],
-    #                [0, 0, 1, 1, 1, 1, 1, 0, 0],
-    #                [0, 1, 1, 1, 1, 1, 1, 1, 0])
-    # morph_erosion = cv2.erode(morph_img, morph_kernel, iterations=1)
-    # morph_dilation = cv2.dilate(morph_img, morph_kernel, iterations=1)
-    # morph_opening = cv2.morphologyEx(morph_img, cv2.MORPH_OPEN, morph_kernel)
-    # morph_closing = cv2.morphologyEx(morph_img, cv2.MORPH_CLOSE, morph_kernel)
-    # morph_gradient = cv2.morphologyEx(morph_img, cv2.MORPH_GRADIENT, morph_kernel)
-    ##morph_tophat = cv2.morphologyEx(morph_img, cv2.MORPH_TOPHAT,  np.uint8(morph_kernel))
-    ##morph_blackhat = cv2.morphologyEx(morph_img, cv2.MORPH_BLACKHAT, np.uint8(morph_kernel))
-    # fro displaying the image
-    # show_one_img(morph_erosion)
-    # show_one_img(morph_dilation)
-    # show_one_img(morph_opening)
-    # show_one_img(morph_closing)
-    # show_one_img(morph_gradient)
-    # show_one_img(morph_tophat)
-    # show_one_img(morph_blackhat)
 
 
 #  Adding to the stack of images
@@ -1155,18 +1016,19 @@ def show_histogram():
             input("press any key to back to processing menu...")
             processing_menu()
 
+
 # Open image matrix in myavi
-def visualisation():
-    from mayavi import mlab
-    pts = mlab.points3d(imageContainer.image_matrix[0], imageContainer.image_matrix[1],
-                        imageContainer.image_matrix[2], imageContainer.image_matrix[2],
-                        scale_mode='none', scale_factor=0.2)
+# def visualisation():
+#    from mayavi import mlab
+#    pts = mlab.points3d(imageContainer.image_matrix[0], imageContainer.image_matrix[1],
+#                        imageContainer.image_matrix[2], imageContainer.image_matrix[2],
+#                        scale_mode='none', scale_factor=0.2)
 
-    mesh = mlab.pipeline.delaunay2d(pts)
-    surf = mlab.pipeline.surface(mesh)
-    mlab.show()
-
+#    mesh = mlab.pipeline.delaunay2d(pts)
+#    surf = mlab.pipeline.surface(mesh)
+#    mlab.show()
 
 
 # Call the menu function
-main_menu()
+if __name__ == "__main__":
+    main_menu()
