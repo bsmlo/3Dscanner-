@@ -142,7 +142,6 @@ u - Undo
 r - Redo
 x - Back to Main Menu:"""
 
-# 34 34
 
         # Main options
         # Red user's chose
