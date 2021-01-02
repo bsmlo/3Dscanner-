@@ -49,6 +49,8 @@ choices = clt.Choices()
 
 new_path = r'C:\Users\Mario\Desktop\image_20.jpg'
 
+# load images from specific patch
+Function.load_images()
 
 # Main Menu
 def main_menu():
@@ -56,7 +58,7 @@ def main_menu():
     global test
 
     # Load images using operations class
-    Function.load_images()
+
     # Function.image_show()
 
     # Image container test
@@ -173,7 +175,7 @@ x - Back to Main Menu:"""
             Function.add_to_stack(filters.rgb_range_filter(Function.actual_image()))
             # rgb_range_filter()
         elif choice == "M" or choice == "m":
-            morphology_filter()
+            Function.add_to_stack(filters.morphology_filter(Function.actual_image()))
         elif choice == "G" or choice == "g":
             Function.add_to_stack(filters.togray(Function.actual_image()))
             # togray()

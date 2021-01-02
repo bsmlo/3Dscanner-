@@ -7,7 +7,6 @@ from kneed import KneeLocator
 from PIL import Image
 from skimage.morphology import white_tophat, skeletonize
 
-
 import concurrent.futures
 
 
@@ -148,19 +147,25 @@ class ImageFilters:
     #  Filtering specific channel of HSV between values
     def rgb_range_filter(self, image):
         img_rgb_filter = np.asarray(image)
-        #arr = np.asarray(image)
+        # arr = np.asarray(image)
 
         if len(img_rgb_filter.shape) >= 3:
             try:
                 # print("***Colour filtering***")
                 get_rgb = self.findrgbrange(img_rgb_filter)
 
+                # RGB range
                 rgb_range = [(get_rgb[0], 255), (get_rgb[1], 255), (get_rgb[2], 255)]
 
                 # Data in BGR
-                red_range = np.logical_and(rgb_range[0][0] <= img_rgb_filter[:, :, 0], img_rgb_filter[:, :, 0] <= rgb_range[0][1])
-                green_range = np.logical_and(rgb_range[1][0] <= img_rgb_filter[:, :, 1], img_rgb_filter[:, :, 1] <= rgb_range[1][1])
-                blue_range = np.logical_and(rgb_range[2][0] <= img_rgb_filter[:, :, 2], img_rgb_filter[:, :, 2] <= rgb_range[2][1])
+                red_range = np.logical_and(rgb_range[0][0] <= img_rgb_filter[:, :, 2],
+                                           img_rgb_filter[:, :, 2] <= rgb_range[0][1])
+
+                green_range = np.logical_and(rgb_range[1][0] <= img_rgb_filter[:, :, 1],
+                                             img_rgb_filter[:, :, 1] <= rgb_range[1][1])
+
+                blue_range = np.logical_and(rgb_range[2][0] <= img_rgb_filter[:, :, 0],
+                                            img_rgb_filter[:, :, 0] <= rgb_range[2][1])
 
                 '''
                     # Data in BGR
@@ -168,47 +173,53 @@ class ImageFilters:
                     green_range = np.logical_and(rgb_range[1][0] <= arr[:, :, 1], arr[:, :, 1] <= rgb_range[1][1])
                     blue_range = np.logical_and(rgb_range[2][0] <= arr[:, :, 2], arr[:, :, 2] <= rgb_range[2][1])'''
 
-                    #redgreen = np.logical_or(red_range, green_range)
-                    #redgreenblue = np.logical_or(redgreen, blue_range)
-
-                redgreen = np.logical_or(red_range, green_range)
-
-                redgreenblue = np.logical_or(redgreen, blue_range)
-
-                img_rgb_filter[np.logical_not(redgreenblue), 0] = 0
-                img_rgb_filter[np.logical_not(redgreenblue), 1] = 0
-                img_rgb_filter[np.logical_not(redgreenblue), 2] = 0
+                # redgreen = np.logical_or(red_range, green_range)
+                # redgreenblue = np.logical_or(redgreen, blue_range)
 
 
+                redgreen = np.logical_or(green_range, blue_range)
 
-                #arr[np.logical_not(redgreenblue), 0] = 0
-                #arr[np.logical_not(redgreenblue), 1] = 0
-                #arr[np.logical_not(redgreenblue), 2] = 0
+                redgreenblue = np.logical_and(redgreen, red_range)
 
-                #import matplotlib.pyplot as plt
-                #for i in range(0, 3):
+                #img_rgb_filter[:,:, 0] = 0
+                #img_rgb_filter[:,:, 1] = 0
+
+                #img_rgb_filter[np.logical_not(red_range), 0] = 0
+                #img_rgb_filter[np.logical_not(green_range), 1] = 0
+                #img_rgb_filter[np.logical_not(blue_range), 2] = 0
+
+                # arr[np.logical_not(redgreenblue), 0] = 0
+                # arr[np.logical_not(redgreenblue), 1] = 0
+                # arr[np.logical_not(redgreenblue), 2] = 0
+
+                # import matplotlib.pyplot as plt
+                # for i in range(0, 3):
                 #    plt.imshow(Image.fromarray(arr[i]))
                 #    plt.show()
 
-                #ready = []
+                # ready = []
 
-                #ready[np.logical_and(redgreen, True)] = 255
+                # ready[np.logical_and(redgreen, True)] = 255
 
-                #arr[np.logical_not(redgreen), 0] = 0
-                #arr[np.logical_not(redgreen), 1] = 0
-                #arr[np.logical_not(redgreen), 2] = 0
+                # arr[np.logical_not(redgreen), 0] = 0
+                # arr[np.logical_not(redgreen), 1] = 0
+                # arr[np.logical_not(redgreen), 2] = 0
 
-                #print(redgreen)
+                # print(redgreen)
 
-                #arr[np.logical_not(redgreen), 0] = 0
-                #arr[np.logical_not(redgreen), 1] = 0
-                #arr[np.logical_not(redgreen), 2] = 0
+                # arr[np.logical_not(redgreen), 0] = 0
+                # arr[np.logical_not(redgreen), 1] = 0
+                # arr[np.logical_not(redgreen), 2] = 0
 
-                #import matplotlib.pyplot as plt
-                #plt.imshow(Image.fromarray(redgreen, mode='L'))
+                import matplotlib.pyplot as plt
+
+                #plt.imshow(Image.fromarray(redgreen))
                 #plt.show()
 
-                out_image = Image.fromarray(redgreen, mode='L')
+                plt.imshow(Image.fromarray(redgreenblue))
+                plt.show()
+
+                out_image = Image.fromarray(redgreenblue, mode='L')
 
                 return out_image
 
@@ -238,12 +249,11 @@ class ImageFilters:
 
                 #  Morphological operations
 
-    #to gray
+    # to gray
     def togray(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         return gray
-
 
     #  Thinning binarized after morph and perspective correction
     def thinning(self, image):
@@ -252,7 +262,16 @@ class ImageFilters:
 
         kernel_dil = np.ones((3, 3), np.uint8)
 
+        #image_binary = cv2.morphologyEx(thin_image, cv2.MORPH_CLOSE, kernel_dil)
+        #image_binary = cv2.morphologyEx(image_binary, cv2.MORPH_OPEN, kernel_dil)
+
+        #import matplotlib.pyplot as plt
+
+        #plt.imshow(image_binary)
+        #plt.show()
+
         image_binary = morphology.closing(thin_image)
+
         image_binary = cv2.dilate(np.float32(image_binary), kernel_dil, iterations=3)
         out_skel = skeletonize(image_binary, method='lee')
 
@@ -308,11 +327,20 @@ class ImageFilters:
         # this is much more precisly but, takes much longer time
         else:
             try:
-                print("***Collecting data..***")
+                print("***Collecting data.. grey***")
+                # print("***converting to grayscale***")
                 morph_for_ski = img_as_float(morph_img)
+
                 # binearisation
-                image_binary = morph_for_ski > 0.001
-                morph_for_ski[np.logical_not(image_binary)] = 0
+                image_binary = morph_img > 0.001
+                morph_img[np.logical_not(image_binary)] = 0
+
+                # binearization - Black tophat
+                wth = white_tophat(morph_img)
+
+                ch_one = wth[:, :] > 5
+
+                morph_for_ski[ch_one] = 0
 
                 return (morph_for_ski * 255).astype(np.uint8)
 
@@ -377,40 +405,53 @@ class ImageFilters:
         if len(image.shape) >= 3:
             try:
                 # print("***Colour RGB range detection***")
-                for i in range(0, 3):
+                for i in [2, 1, 0]:
+
                     cdf3 = exposure.cumulative_distribution(image[:, :, i])
+
+
 
                     mask = tuple([cdf3[0] > 0.95])
 
-                    #print(cdf3[1])
+                    # print(cdf3[1])
 
-                    filtred = tuple( [cdf3[0][mask],  cdf3[1][mask] ] )
+                    filtred = tuple([cdf3[0][mask], cdf3[1][mask]])
 
-                    #print(filtred[1])
+                    # print(filtred[1])
 
 
 
                     #import matplotlib.pyplot as plt
-                    #plt.figure(1)
+
+                    #plt.imshow(Image.fromarray(image[:, :, i]))
+                    #plt.show()
+                    # plt.figure(1)
 
                     dff = np.diff(filtred[0])
                     ex = (np.array(filtred[1])[:-1] + np.array(filtred[1])[1:]) / 2
-                    #print(len(ex))
-                    #print(len(dff))
-                    #plt.imshow(image[:, :, i])
-                    #plt.show()
-                    #plt.clf()
+                    # print(len(ex))
+                    # print(len(dff))
+                    # plt.imshow(image[:, :, i])
+                    # plt.show()
+                    # plt.clf()
                     #plt.plot(ex, dff)
 
                     #
-
-                    kneedle = KneeLocator(ex, dff, S=30, curve='convex', direction='increasing')
-                    #kneedle.
+                    sensitivity = 30
+                    while True:
+                        kneedle = KneeLocator(ex, dff, sensitivity, curve='convex', direction='increasing')
+                        if kneedle.knee:
+                            break
+                        else:
+                            sensitivity -= 5
+                            print(sensitivity)
+                    # kneedle.
 
                     #kneedle.plot_knee()
                     #plt.show()
                     RGB.append(int(kneedle.knee))
 
+                print(RGB)
 
                 return RGB
 
@@ -418,7 +459,7 @@ class ImageFilters:
                 print(ValueError)
                 print("Can't get the range")
                 input("press any key to back to processing menu...")
-                return False
+                return [257, 257, 257]
 
         else:
             try:
@@ -432,7 +473,7 @@ class ImageFilters:
                 print(ValueError)
                 print("Can't get the range")
                 input("press any key to back to processing menu...")
-                return False
+                return [257, 257, 257]
 
 
 # sequence from imagelist
