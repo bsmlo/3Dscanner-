@@ -264,19 +264,22 @@ class ImageFilters:
         # print("***Thinning***")
         thin_image = img_as_float(image)
 
-        kernel_dil = np.ones((3, 3), np.uint8)
+        kernel_dil = np.ones((10, 10), np.uint8)
 
         #image_binary = cv2.morphologyEx(thin_image, cv2.MORPH_CLOSE, kernel_dil)
         #image_binary = cv2.morphologyEx(image_binary, cv2.MORPH_OPEN, kernel_dil)
 
-        #import matplotlib.pyplot as plt
+        import matplotlib.pyplot as plt
 
+        #image_binary = morphology.closing(thin_image, )
+        image_binary = cv2.morphologyEx(thin_image, cv2.MORPH_CLOSE, kernel_dil)
+        #plt.imshow(image_binary)
+        #plt.show()
+        image_binary = morphology.opening(image_binary)
         #plt.imshow(image_binary)
         #plt.show()
 
-        image_binary = morphology.closing(thin_image)
-
-        image_binary = cv2.dilate(np.float32(image_binary), kernel_dil, iterations=3)
+        #image_binary = cv2.dilate(np.float32(image_binary), kernel_dil, iterations=3)
         out_skel = skeletonize(image_binary, method='lee')
 
         '''
@@ -359,6 +362,11 @@ class ImageFilters:
                 print("Can't convert this image to grayscale")
                 return image
 
+        # gamma corection
+    def gammacorection(self, image):
+        image = exposure.adjust_sigmoid(image, 0.95)
+        return image
+
     # gausian blur
     def gausianblur(self, image):
         image = cv2.bilateralFilter(image, 10, 50, 50)
@@ -431,22 +439,25 @@ class ImageFilters:
                     #plt.show()
                     # plt.figure(1)
 
-                    dff = np.diff(filtred[0])
-                    ex = (np.array(filtred[1])[:-1] + np.array(filtred[1])[1:]) / 2
+                    dff = np.diff(cdf3[0])
+                    ex = (np.array(cdf3[1])[:-1] + np.array(cdf3[1])[1:]) / 2
+
+                    #dff = np.diff(filtred[0])
+                    #ex = (np.array(filtred[1])[:-1] + np.array(filtred[1])[1:]) / 2
                     # print(len(ex))
                     # print(len(dff))
                     # plt.imshow(image[:, :, i])
                     # plt.show()
                     # plt.clf()
                     #plt.plot(ex, dff)
-                    plt.plot(cdf3[0], cdf3[1])
+                    plt.plot(cdf3[1], cdf3[0])
                     plt.show()
 
                     #
-                    sensitivity = 30
-                    print(sensitivity)
+                    sensitivity = 0
+                    #print(sensitivity)
                     while True:
-                        kneedle = KneeLocator(ex, dff, sensitivity, curve='convex', direction='increasing')
+                        kneedle = KneeLocator(cdf3[1], cdf3[0], sensitivity, curve='convex', direction='increasing')
                         if kneedle.knee:
                             break
                         else:
@@ -458,7 +469,7 @@ class ImageFilters:
                     plt.show()
                     RGB.append(int(kneedle.knee))
 
-                #print(RGB)
+                print(RGB)
 
                 return RGB
 
@@ -541,6 +552,7 @@ class Sequence(ImageFilters):
             image = self.filter_undistort(image)  # Barell undst
             image = self.rgb_range_filter(image)  # RGB range
             #image = self.morphology_filter(image)  # Morph
+            #image = self.perspective_correction(image)  # Perspective
             image = self.perspective_correction(image)  # Perspective
             image = self.thinning(image)  # Thinning
             layer_mtx = self.binearize(image)  # Binearization

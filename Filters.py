@@ -167,8 +167,8 @@ x - Back to Main Menu:"""
             gausianblur()
         elif choice == "8" and img.size != 0:
             skinldenoise()
-        elif choice == "9" and img.size != 0:
-            gammacorection()
+        elif choice == "9":
+            Function.add_to_stack(filters.gammacorection(Function.actual_image()))
         elif choice == "T" or choice == "t":
             Function.add_to_stack(filters.thinning(Function.actual_image()))
         elif choice == "B" or choice == "b":
