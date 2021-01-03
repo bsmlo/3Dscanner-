@@ -57,6 +57,8 @@ class Operations(EditHandler.EditHandler):
                 self.image_to_edit(int(imageContainer.number_of_elements/2))
                 print('%s' % imageContainer.number_of_elements)
 
+
+
     def image_to_edit(self, index=-1):
         if index == -1:
             print('Select image')

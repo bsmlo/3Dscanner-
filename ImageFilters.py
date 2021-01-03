@@ -211,13 +211,17 @@ class ImageFilters:
                 # arr[np.logical_not(redgreen), 1] = 0
                 # arr[np.logical_not(redgreen), 2] = 0
 
-                import matplotlib.pyplot as plt
+                '''import matplotlib.pyplot as plt
 
                 #plt.imshow(Image.fromarray(redgreen))
                 #plt.show()
 
-                plt.imshow(Image.fromarray(redgreenblue))
+                plt.imshow(Image.fromarray(red_range))
                 plt.show()
+                plt.imshow(Image.fromarray(green_range))
+                plt.show()
+                plt.imshow(Image.fromarray(blue_range))
+                plt.show()'''
 
                 out_image = Image.fromarray(redgreenblue, mode='L')
 
@@ -421,7 +425,7 @@ class ImageFilters:
 
 
 
-                    #import matplotlib.pyplot as plt
+                    import matplotlib.pyplot as plt
 
                     #plt.imshow(Image.fromarray(image[:, :, i]))
                     #plt.show()
@@ -435,23 +439,26 @@ class ImageFilters:
                     # plt.show()
                     # plt.clf()
                     #plt.plot(ex, dff)
+                    plt.plot(cdf3[0], cdf3[1])
+                    plt.show()
 
                     #
                     sensitivity = 30
+                    print(sensitivity)
                     while True:
                         kneedle = KneeLocator(ex, dff, sensitivity, curve='convex', direction='increasing')
                         if kneedle.knee:
                             break
                         else:
                             sensitivity -= 5
-                            print(sensitivity)
+                            #print(sensitivity)
                     # kneedle.
 
-                    #kneedle.plot_knee()
-                    #plt.show()
+                    kneedle.plot_knee()
+                    plt.show()
                     RGB.append(int(kneedle.knee))
 
-                print(RGB)
+                #print(RGB)
 
                 return RGB
 
@@ -533,7 +540,7 @@ class Sequence(ImageFilters):
             image = image
             image = self.filter_undistort(image)  # Barell undst
             image = self.rgb_range_filter(image)  # RGB range
-            image = self.morphology_filter(image)  # Morph
+            #image = self.morphology_filter(image)  # Morph
             image = self.perspective_correction(image)  # Perspective
             image = self.thinning(image)  # Thinning
             layer_mtx = self.binearize(image)  # Binearization

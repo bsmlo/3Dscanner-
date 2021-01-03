@@ -189,8 +189,11 @@ x - Back to Main Menu:"""
         elif choice == "W" or choice == "w":
             save_picture()
         elif choice == "R":
-            Function.dosequenceThreads()
+            import time
 
+            now = time.time()
+            Function.dosequenceThreads()
+            print(time.time() - now)
             # load_paths images from the list
 
             # imageContainer.dosequence(['barell', 'rgbrange', 'morph', 'perspective', 'thinning', 'binearization'])
