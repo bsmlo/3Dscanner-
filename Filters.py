@@ -136,6 +136,7 @@ P - Perspective correction
 M - Morphological operation
 O - Gausian otsus filtering
 G - 2 gray
+I - Normalised intensity
 w - Save picture
 R - Run sequence
 V - Visualisation
@@ -158,8 +159,8 @@ x - Back to Main Menu:"""
             rgb_to_hsv()
         elif choice == "4" and img.size != 0:
             normalise_img()
-        elif choice == "5" and img.size != 0:
-            show_histogram()
+        elif choice == "5":
+            filters.show_histogram(Function.actual_image())
         elif choice == "6":  # and img.size != 0:
             Function.add_to_stack(filters.filter_undistort(Function.actual_image()))
             # filter_undistort()
@@ -178,6 +179,8 @@ x - Back to Main Menu:"""
             Function.add_to_stack(filters.morphology_filter(Function.actual_image()))
         elif choice == "G" or choice == "g":
             Function.add_to_stack(filters.togray(Function.actual_image()))
+        elif choice == "I" or choice == "i":
+            Function.add_to_stack(filters.intensity(Function.actual_image()))
             # togray()
         elif choice == "O" or choice == "o":
             gausianotsus()
@@ -989,7 +992,7 @@ def hsv_range_filter(img_stat, min_value, max_value):
     hsv_processing_menu()
 
 
-#  Create and show histogram
+'''#  Create and show histogram
 def show_histogram():
     img_hist = load_a_picture()
     if len(img_hist.shape) >= 3:
@@ -1020,7 +1023,7 @@ def show_histogram():
             print(ValueError)
             print("Can't get the histogram of selected image")
             input("press any key to back to processing menu...")
-            processing_menu()
+            processing_menu()'''
 
 
 # Open image matrix in myavi

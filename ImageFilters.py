@@ -181,20 +181,25 @@ class ImageFilters:
 
                 redgreenblue = np.logical_and(redgreen, red_range)
 
+                allmask_gr = np.logical_and(green_range, red_range)
+                allmask_br = np.logical_and(blue_range, red_range)
+
+                allmask = np.logical_or(allmask_gr, allmask_br)
+
                 #img_rgb_filter[:,:, 0] = 0
                 #img_rgb_filter[:,:, 1] = 0
 
-                #img_rgb_filter[np.logical_not(red_range), 0] = 0
-                #img_rgb_filter[np.logical_not(green_range), 1] = 0
-                #img_rgb_filter[np.logical_not(blue_range), 2] = 0
+                img_rgb_filter[np.logical_not(allmask), 0] = 0
+                img_rgb_filter[np.logical_not(allmask), 1] = 0
+                img_rgb_filter[np.logical_not(allmask), 2] = 0
 
                 # arr[np.logical_not(redgreenblue), 0] = 0
                 # arr[np.logical_not(redgreenblue), 1] = 0
                 # arr[np.logical_not(redgreenblue), 2] = 0
 
-                # import matplotlib.pyplot as plt
-                # for i in range(0, 3):
-                #    plt.imshow(Image.fromarray(arr[i]))
+                #import matplotlib.pyplot as plt
+                #for i in range(0, 3):
+                #    plt.imshow(Image.fromarray(img_rgb_filter[i]))
                 #    plt.show()
 
                 # ready = []
@@ -213,8 +218,8 @@ class ImageFilters:
 
                 '''import matplotlib.pyplot as plt
 
-                #plt.imshow(Image.fromarray(redgreen))
-                #plt.show()
+                plt.imshow(Image.fromarray(img_rgb_filter))
+                plt.show()
 
                 plt.imshow(Image.fromarray(red_range))
                 plt.show()
@@ -223,7 +228,9 @@ class ImageFilters:
                 plt.imshow(Image.fromarray(blue_range))
                 plt.show()'''
 
-                out_image = Image.fromarray(redgreenblue, mode='L')
+                #out_image = Image.fromarray(allmask, mode='L')
+
+                out_image = Image.fromarray(img_rgb_filter)
 
                 return out_image
 
@@ -272,10 +279,10 @@ class ImageFilters:
         import matplotlib.pyplot as plt
 
         #image_binary = morphology.closing(thin_image, )
-        image_binary = cv2.morphologyEx(thin_image, cv2.MORPH_CLOSE, kernel_dil)
+        #image_binary = cv2.morphologyEx(thin_image, cv2.MORPH_CLOSE, kernel_dil)
         #plt.imshow(image_binary)
         #plt.show()
-        image_binary = morphology.opening(image_binary)
+        image_binary = morphology.opening(thin_image)
         #plt.imshow(image_binary)
         #plt.show()
 
@@ -362,6 +369,19 @@ class ImageFilters:
                 print("Can't convert this image to grayscale")
                 return image
 
+        # calculate intensity as normalised sum of the channels
+    def intensity(self, image):
+        out = np.dot(image[...,:3], [1, 1, 1])
+
+        out = (out/765) * 255
+
+        out_image = Image.fromarray(out)
+
+        return  out_image
+
+
+
+
         # gamma corection
     def gammacorection(self, image):
         image = exposure.adjust_sigmoid(image, 0.95)
@@ -421,8 +441,6 @@ class ImageFilters:
 
                     cdf3 = exposure.cumulative_distribution(image[:, :, i])
 
-
-
                     mask = tuple([cdf3[0] > 0.95])
 
                     # print(cdf3[1])
@@ -433,43 +451,43 @@ class ImageFilters:
 
 
 
-                    import matplotlib.pyplot as plt
+                    #import matplotlib.pyplot as plt
 
                     #plt.imshow(Image.fromarray(image[:, :, i]))
                     #plt.show()
                     # plt.figure(1)
 
-                    dff = np.diff(cdf3[0])
-                    ex = (np.array(cdf3[1])[:-1] + np.array(cdf3[1])[1:]) / 2
+                    #dff = np.diff(cdf3[0])
+                    #ex = (np.array(cdf3[1])[:-1] + np.array(cdf3[1])[1:]) / 2
 
-                    #dff = np.diff(filtred[0])
-                    #ex = (np.array(filtred[1])[:-1] + np.array(filtred[1])[1:]) / 2
-                    # print(len(ex))
+                    dff = np.diff(filtred[0])
+                    ex = (np.array(filtred[1])[:-1] + np.array(filtred[1])[1:]) / 2
+                    #print(ex)
                     # print(len(dff))
                     # plt.imshow(image[:, :, i])
                     # plt.show()
                     # plt.clf()
                     #plt.plot(ex, dff)
-                    plt.plot(cdf3[1], cdf3[0])
-                    plt.show()
+                    #plt.plot(cdf3[0], cdf3[1])
+                    #plt.show()
 
                     #
-                    sensitivity = 0
+                    sensitivity = 50
                     #print(sensitivity)
                     while True:
-                        kneedle = KneeLocator(cdf3[1], cdf3[0], sensitivity, curve='convex', direction='increasing')
-                        if kneedle.knee:
+                        kneedle = KneeLocator(ex, dff, sensitivity, curve='convex', direction='increasing')
+                        if kneedle.knee: #.knee:
                             break
                         else:
                             sensitivity -= 5
                             #print(sensitivity)
                     # kneedle.
 
-                    kneedle.plot_knee()
-                    plt.show()
+                    #kneedle.plot_knee()
+                    #plt.show()
                     RGB.append(int(kneedle.knee))
 
-                print(RGB)
+                #print(RGB)
 
                 return RGB
 
@@ -492,6 +510,37 @@ class ImageFilters:
                 print("Can't get the range")
                 input("press any key to back to processing menu...")
                 return [257, 257, 257]
+
+    #  Create and show histogram
+    def show_histogram(self, image):
+        import matplotlib.pyplot as plt
+        img_hist = image
+        if len(img_hist.shape) >= 3:
+            try:
+                print("***Colour histogram***")
+                for i, col in enumerate(['b', 'g', 'r']):
+                    hist = cv2.calcHist([img_hist], [i], None, [256], [0, 256])
+                    plt.plot(hist, color=col)
+                    plt.xlim([0, 256])
+
+                plt.show()
+
+            except ValueError:
+                print(ValueError)
+                print("Can't get the histogram of selected image")
+                input("press any key to back to processing menu...")
+
+        else:
+            try:
+                print("***Grayscale histogram***")
+                histogram = cv2.calcHist([img_hist], [0], None, [256], [0, 256])
+                plt.plot(histogram, color='k')
+                plt.show()
+
+            except ValueError:
+                print(ValueError)
+                print("Can't get the histogram of selected image")
+                input("press any key to back to processing menu...")
 
 
 # sequence from imagelist

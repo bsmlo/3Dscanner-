@@ -30,7 +30,7 @@ class ImageContainer(ImageFilters.Sequence):
         self.image_type = ''
         self.folder_directory = ''
         self.number_of_elements = 0
-        self.resolution = 39.1 / 392  # 0.082142 0.2005102 #0.1074   39.2cm  # Length between two layers of scanning
+        self.resolution = 39.1 / 196  # 0.082142 0.2005102 #0.1074   39.2cm  # Length between two layers of scanning
         # item 0.2142857 #
 
     # Load images paths to the list
