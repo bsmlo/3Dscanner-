@@ -365,77 +365,11 @@ def chose_path():
             print("Path does not exist!")
 
 
-'''                
-        if os.path.isfile(new_path):
-            if new_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
-                
-                file_path = new_path
-                load_image()
-            else:
-                file_path = ""
-                print("Wrong extension! Use: png, jpg or bmp.")
-                chose_path()
-        else:
-            file_path = ""
-            print("The file path does not exist!")
-'''
-
-
 # Load image from the path
 def load_image():
     global img
     img = cv2.imread(file_path)
     img_list.append(img)
-
-
-# Binarisation
-# def binearization():
-#    img_binarization = load_a_picture()
-# gray = cv2.cvtColor(img_binarization, cv2.COLOR_BGR2GRAY)
-# bin = np.nonzero(gray)
-# plt.plot(bin[1], bin[0], '.')
-
-# plt.plot(red_range = np.logical_and(bin[1] <= 537, arr[:, :, 0] <= rgb_range[0][1]))
-# print(bin[1])
-# print(bin[0])
-
-# plt.show()
-# processing_menu()
-"""
-    if len(img_binarization.shape) >= 3:
-        try:
-            print("***converting to grayscale***")
-            gray = cv2.cvtColor(np.float32(img_binarization), cv2.COLOR_BGR2GRAY)
-            bin = np.nonzero(gray)
-            imageContainer.add_matrix([bin[1] / 60.884, bin[0] / 31.597])  # add matrix to image container
-            plt.plot(bin[1] / 60.884, bin[0] / 31.597, '.')  # convertion to cm y/34.909090 x/58.272727
-            ##test
-            print(imageContainer.image_matrix)
-            print(imageContainer.image_matrix[0][1])
-            plt.plot(imageContainer.image_matrix[0][1], imageContainer.image_matrix[0][2], '.')
-            plt.show()
-            processing_menu()
-        except ValueError:
-            print(ValueError)
-            print("Can't convert this image to grayscale")
-            input("press any key to back to processing menu...")
-            processing_menu()
-    else:
-        try:
-            print("***Collecting data..***")
-            bin = np.nonzero(img_binarization)
-            imageContainer.add_matrix([bin[1] / 60.884, bin[0] / 31.597])  # add matrix to image container
-            plt.plot(bin[1] / 60.884, bin[0] / 31.597, '.')  # convertion to cm y/34.909090 x/58.272727
-            plt.axis('square')
-            plt.show()
-            processing_menu()
-        except ValueError:
-            print(ValueError)
-            print("Can't plot this image...")
-            input("press any key to back to processing menu...")
-            processing_menu()
-"""
-
 
 # gamma corection
 def gammacorection():
@@ -915,7 +849,6 @@ def rgb_range_filter():
     img_rgb_filter = load_a_picture()
     arr = np.array(np.asarray(img_rgb_filter))
 
-    # get_rgb = findrgbrange(img_rgb_filter)
 
     if len(arr.shape) >= 3:
         try:
@@ -990,53 +923,6 @@ def hsv_range_filter(img_stat, min_value, max_value):
         print("Not implemented yet!")
 
     hsv_processing_menu()
-
-
-'''#  Create and show histogram
-def show_histogram():
-    img_hist = load_a_picture()
-    if len(img_hist.shape) >= 3:
-        try:
-            print("***Colour histogram***")
-            for i, col in enumerate(['b', 'g', 'r']):
-                hist = cv2.calcHist([img_hist], [i], None, [256], [0, 256])
-                plt.plot(hist, color=col)
-                plt.xlim([0, 256])
-
-            plt.show()
-
-        except ValueError:
-            print(ValueError)
-            print("Can't get the histogram of selected image")
-            input("press any key to back to processing menu...")
-            processing_menu()
-    else:
-        try:
-            print("***Grayscale histogram***")
-            # gray_image = cv2.cvtColor(img_hist, cv2.COLOR_BGR2GRAY)
-            histogram = cv2.calcHist([img_hist], [0], None, [256], [0, 256])
-            plt.plot(histogram, color='k')
-            plt.show()
-            processing_menu()
-
-        except ValueError:
-            print(ValueError)
-            print("Can't get the histogram of selected image")
-            input("press any key to back to processing menu...")
-            processing_menu()'''
-
-
-# Open image matrix in myavi
-# def visualisation():
-#    from mayavi import mlab
-#    pts = mlab.points3d(imageContainer.image_matrix[0], imageContainer.image_matrix[1],
-#                        imageContainer.image_matrix[2], imageContainer.image_matrix[2],
-#                        scale_mode='none', scale_factor=0.2)
-
-#    mesh = mlab.pipeline.delaunay2d(pts)
-#    surf = mlab.pipeline.surface(mesh)
-#    mlab.show()
-
 
 # Call the menu function
 if __name__ == "__main__":

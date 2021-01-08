@@ -15,13 +15,13 @@ class ImageFilters:
     def __init__(self):
         self.images_to_edit = []
         self.edited_images = []
-        self.compare_images = []  # images before motphological thinnig
+        self.compare_images = []  # images before morphological thinning
         self.image_matrix = [[], [], []]
         self.list_of_functions = []
         self.layer_number = 0
         self.resolution = 0  # 1.82608   #42cm/number of frames to change in image container
 
-    # Geometrical undistorion
+    # Geometrical undistortion
     def filter_undistort(self, image):
         mtx = ([1.43007971e+03, 0.00000000e+00, 6.23310543e+02],
                [0.00000000e+00, 1.41523006e+03, 3.20646989e+02],
@@ -147,7 +147,6 @@ class ImageFilters:
     #  Filtering specific channel of HSV between values
     def rgb_range_filter(self, image):
         img_rgb_filter = np.asarray(image)
-        # arr = np.asarray(image)
 
         if len(img_rgb_filter.shape) >= 3:
             try:
@@ -167,70 +166,16 @@ class ImageFilters:
                 blue_range = np.logical_and(rgb_range[2][0] <= img_rgb_filter[:, :, 0],
                                             img_rgb_filter[:, :, 0] <= rgb_range[2][1])
 
-                '''
-                    # Data in BGR
-                    red_range = np.logical_and(rgb_range[0][0] <= arr[:, :, 0], arr[:, :, 0] <= rgb_range[0][1])
-                    green_range = np.logical_and(rgb_range[1][0] <= arr[:, :, 1], arr[:, :, 1] <= rgb_range[1][1])
-                    blue_range = np.logical_and(rgb_range[2][0] <= arr[:, :, 2], arr[:, :, 2] <= rgb_range[2][1])'''
+                mask_gr = np.logical_and(green_range, red_range)
+                mask_br = np.logical_and(blue_range, red_range)
 
-                # redgreen = np.logical_or(red_range, green_range)
-                # redgreenblue = np.logical_or(redgreen, blue_range)
+                all_mask = np.logical_or(mask_gr, mask_br)
 
+                # img_rgb_filter[np.logical_not(all_mask), 0] = 0
+                # img_rgb_filter[np.logical_not(all_mask), 1] = 0
+                # img_rgb_filter[np.logical_not(all_mask), 2] = 0
 
-                redgreen = np.logical_or(green_range, blue_range)
-
-                redgreenblue = np.logical_and(redgreen, red_range)
-
-                allmask_gr = np.logical_and(green_range, red_range)
-                allmask_br = np.logical_and(blue_range, red_range)
-
-                allmask = np.logical_or(allmask_gr, allmask_br)
-
-                #img_rgb_filter[:,:, 0] = 0
-                #img_rgb_filter[:,:, 1] = 0
-
-                img_rgb_filter[np.logical_not(allmask), 0] = 0
-                img_rgb_filter[np.logical_not(allmask), 1] = 0
-                img_rgb_filter[np.logical_not(allmask), 2] = 0
-
-                # arr[np.logical_not(redgreenblue), 0] = 0
-                # arr[np.logical_not(redgreenblue), 1] = 0
-                # arr[np.logical_not(redgreenblue), 2] = 0
-
-                #import matplotlib.pyplot as plt
-                #for i in range(0, 3):
-                #    plt.imshow(Image.fromarray(img_rgb_filter[i]))
-                #    plt.show()
-
-                # ready = []
-
-                # ready[np.logical_and(redgreen, True)] = 255
-
-                # arr[np.logical_not(redgreen), 0] = 0
-                # arr[np.logical_not(redgreen), 1] = 0
-                # arr[np.logical_not(redgreen), 2] = 0
-
-                # print(redgreen)
-
-                # arr[np.logical_not(redgreen), 0] = 0
-                # arr[np.logical_not(redgreen), 1] = 0
-                # arr[np.logical_not(redgreen), 2] = 0
-
-                '''import matplotlib.pyplot as plt
-
-                plt.imshow(Image.fromarray(img_rgb_filter))
-                plt.show()
-
-                plt.imshow(Image.fromarray(red_range))
-                plt.show()
-                plt.imshow(Image.fromarray(green_range))
-                plt.show()
-                plt.imshow(Image.fromarray(blue_range))
-                plt.show()'''
-
-                #out_image = Image.fromarray(allmask, mode='L')
-
-                out_image = Image.fromarray(img_rgb_filter)
+                out_image = Image.fromarray(all_mask)
 
                 return out_image
 
@@ -273,30 +218,12 @@ class ImageFilters:
 
         kernel_dil = np.ones((10, 10), np.uint8)
 
-        #image_binary = cv2.morphologyEx(thin_image, cv2.MORPH_CLOSE, kernel_dil)
-        #image_binary = cv2.morphologyEx(image_binary, cv2.MORPH_OPEN, kernel_dil)
-
-        import matplotlib.pyplot as plt
-
-        #image_binary = morphology.closing(thin_image, )
-        #image_binary = cv2.morphologyEx(thin_image, cv2.MORPH_CLOSE, kernel_dil)
-        #plt.imshow(image_binary)
-        #plt.show()
         image_binary = morphology.opening(thin_image)
-        #plt.imshow(image_binary)
-        #plt.show()
+        # plt.imshow(image_binary)
+        # plt.show()
 
-        #image_binary = cv2.dilate(np.float32(image_binary), kernel_dil, iterations=3)
+        # image_binary = cv2.dilate(np.float32(image_binary), kernel_dil, iterations=3)
         out_skel = skeletonize(image_binary, method='lee')
-
-        '''
-        thin_image = img_as_float(image)
-
-        kernel_dil = np.ones((3, 3), np.uint8)
-
-        image_binary = morphology.opening(thin_image)
-        image_binary = cv2.dilate(np.float32(image_binary), kernel_dil, iterations=3)
-        out_skel = skeletonize(image_binary, method='lee')'''
 
         return out_skel
 
@@ -370,19 +297,18 @@ class ImageFilters:
                 return image
 
         # calculate intensity as normalised sum of the channels
-    def intensity(self, image):
-        out = np.dot(image[...,:3], [1, 1, 1])
 
-        out = (out/765) * 255
+    def intensity(self, image):
+        out = np.dot(image[..., :3], [1, 1, 1])
+
+        out = (out / 765) * 255
 
         out_image = Image.fromarray(out)
 
-        return  out_image
-
-
-
+        return out_image
 
         # gamma corection
+
     def gammacorection(self, image):
         image = exposure.adjust_sigmoid(image, 0.95)
         return image
@@ -449,45 +375,43 @@ class ImageFilters:
 
                     # print(filtred[1])
 
+                    # import matplotlib.pyplot as plt
 
-
-                    #import matplotlib.pyplot as plt
-
-                    #plt.imshow(Image.fromarray(image[:, :, i]))
-                    #plt.show()
+                    # plt.imshow(Image.fromarray(image[:, :, i]))
+                    # plt.show()
                     # plt.figure(1)
 
-                    #dff = np.diff(cdf3[0])
-                    #ex = (np.array(cdf3[1])[:-1] + np.array(cdf3[1])[1:]) / 2
+                    # dff = np.diff(cdf3[0])
+                    # ex = (np.array(cdf3[1])[:-1] + np.array(cdf3[1])[1:]) / 2
 
                     dff = np.diff(filtred[0])
                     ex = (np.array(filtred[1])[:-1] + np.array(filtred[1])[1:]) / 2
-                    #print(ex)
+                    # print(ex)
                     # print(len(dff))
                     # plt.imshow(image[:, :, i])
                     # plt.show()
                     # plt.clf()
-                    #plt.plot(ex, dff)
-                    #plt.plot(cdf3[0], cdf3[1])
-                    #plt.show()
+                    # plt.plot(ex, dff)
+                    # plt.plot(cdf3[0], cdf3[1])
+                    # plt.show()
 
                     #
                     sensitivity = 50
-                    #print(sensitivity)
+                    # print(sensitivity)
                     while True:
                         kneedle = KneeLocator(ex, dff, sensitivity, curve='convex', direction='increasing')
-                        if kneedle.knee: #.knee:
+                        if kneedle.knee:  # .knee:
                             break
                         else:
                             sensitivity -= 5
-                            #print(sensitivity)
+                            # print(sensitivity)
                     # kneedle.
 
-                    #kneedle.plot_knee()
-                    #plt.show()
+                    # kneedle.plot_knee()
+                    # plt.show()
                     RGB.append(int(kneedle.knee))
 
-                #print(RGB)
+                # print(RGB)
 
                 return RGB
 
@@ -600,8 +524,8 @@ class Sequence(ImageFilters):
             image = image
             image = self.filter_undistort(image)  # Barell undst
             image = self.rgb_range_filter(image)  # RGB range
-            #image = self.morphology_filter(image)  # Morph
-            #image = self.perspective_correction(image)  # Perspective
+            # image = self.morphology_filter(image)  # Morph
+            # image = self.perspective_correction(image)  # Perspective
             image = self.perspective_correction(image)  # Perspective
             image = self.thinning(image)  # Thinning
             layer_mtx = self.binearize(image)  # Binearization

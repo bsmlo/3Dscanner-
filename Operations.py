@@ -44,20 +44,18 @@ class Operations(EditHandler.EditHandler):
         # Image container test
         # Load all images from selected path
         if imageContainer.number_of_elements == 0:
-            imageContainer.load_paths(r'%s'%(self.images_patch), r'.jpg')  ### loading off
-            print('%s'%(self.images_patch))
-            self.image_to_edit(int(imageContainer.number_of_elements/2))  # load the middle image form the list
+            imageContainer.load_paths(r'%s' % (self.images_patch), r'.jpg')  ### loading off
+            print('%s' % (self.images_patch))
+            self.image_to_edit(int(imageContainer.number_of_elements / 2))  # load the middle image form the list
             print('%s' % imageContainer.number_of_elements)
 
         else:
             print(f"Images already loaded to the list... {imageContainer.number_of_elements} items loaded.")
             decision = input('Reload? Y/n')
             if decision == 'Y':
-                imageContainer.load_paths(r'%s'%(self.images_patch), r'.jpg')
-                self.image_to_edit(int(imageContainer.number_of_elements/2))
+                imageContainer.load_paths(r'%s' % (self.images_patch), r'.jpg')
+                self.image_to_edit(int(imageContainer.number_of_elements / 2))
                 print('%s' % imageContainer.number_of_elements)
-
-
 
     def image_to_edit(self, index=-1):
         if index == -1:

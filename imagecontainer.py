@@ -1,20 +1,11 @@
 import glob
 import cv2
 import ntpath
-import numpy as np
 import ImageFilters
-# import Sequence
 import re
-from numpy import asarray
-from numpy import save
-from numpy import load
-
-from multiprocessing import Process
-from threading import Thread
-import os
 
 
-# image container, loads and counts image collection
+# image container for images collection
 
 
 class ImageContainer(ImageFilters.Sequence):
@@ -30,7 +21,7 @@ class ImageContainer(ImageFilters.Sequence):
         self.image_type = ''
         self.folder_directory = ''
         self.number_of_elements = 0
-        self.resolution = 39.1 / 196  # 0.082142 0.2005102 #0.1074   39.2cm  # Length between two layers of scanning
+        self.resolution = 39.1 / 391  # 0.082142 0.2005102 #0.1074   39.2cm  # Length between two layers of scanning
         # item 0.2142857 #
 
     # Load images paths to the list
@@ -58,13 +49,6 @@ class ImageContainer(ImageFilters.Sequence):
 
         self.count_images()
 
-    #def dosequence(self, functions):
-    #    ImageFilters.Sequence.call_sequence(self, self.image_list, functions, self.resolution)
-
-    # Edit in diferent threads
-    #def dosequenceThreads(self):
-    #    ImageFilters.Sequence.CallSequenceThreads(self, self.image_list, self.resolution)
-
     # Count images and append resolution
     def count_images(self):
         self.number_of_elements = len(self.image_list)
@@ -76,16 +60,3 @@ class ImageContainer(ImageFilters.Sequence):
         print(self.image_paths)
         print(self.image_names)
 
-    # Save image matrix as a plane txt
-#    def save_matrix(self):
-#        matrix_path = '{}\{}'.format(self.folder_directory, 'img_mtx.npy')
-#        print(matrix_path)
-#        save(matrix_path, self.image_matrix)
-
-    # Save image matrix as a plane txt
-#    def load_matrix(self):
-#        matrix_path = '{}\{}'.format(self.folder_directory, 'img_mtx.npy')
-#        print(matrix_path)
-#        self.image_matrix = load_paths(matrix_path)
-#        print('Loaded')
- #       print(self.image_matrix.shape)
