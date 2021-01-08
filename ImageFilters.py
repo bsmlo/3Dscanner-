@@ -171,11 +171,11 @@ class ImageFilters:
 
                 all_mask = np.logical_or(mask_gr, mask_br)
 
-                # img_rgb_filter[np.logical_not(all_mask), 0] = 0
-                # img_rgb_filter[np.logical_not(all_mask), 1] = 0
-                # img_rgb_filter[np.logical_not(all_mask), 2] = 0
+                img_rgb_filter[np.logical_not(all_mask), 0] = 0
+                img_rgb_filter[np.logical_not(all_mask), 1] = 0
+                img_rgb_filter[np.logical_not(all_mask), 2] = 0
 
-                out_image = Image.fromarray(all_mask)
+                out_image = Image.fromarray(img_rgb_filter)
 
                 return out_image
 
@@ -373,31 +373,13 @@ class ImageFilters:
 
                     filtred = tuple([cdf3[0][mask], cdf3[1][mask]])
 
-                    # print(filtred[1])
-
-                    # import matplotlib.pyplot as plt
-
-                    # plt.imshow(Image.fromarray(image[:, :, i]))
-                    # plt.show()
-                    # plt.figure(1)
-
-                    # dff = np.diff(cdf3[0])
-                    # ex = (np.array(cdf3[1])[:-1] + np.array(cdf3[1])[1:]) / 2
-
                     dff = np.diff(filtred[0])
                     ex = (np.array(filtred[1])[:-1] + np.array(filtred[1])[1:]) / 2
-                    # print(ex)
-                    # print(len(dff))
-                    # plt.imshow(image[:, :, i])
-                    # plt.show()
-                    # plt.clf()
-                    # plt.plot(ex, dff)
-                    # plt.plot(cdf3[0], cdf3[1])
-                    # plt.show()
 
-                    #
-                    sensitivity = 50
-                    # print(sensitivity)
+                    sensitivity = 10
+
+                    import matplotlib.pyplot as plt
+
                     while True:
                         kneedle = KneeLocator(ex, dff, sensitivity, curve='convex', direction='increasing')
                         if kneedle.knee:  # .knee:
@@ -407,11 +389,11 @@ class ImageFilters:
                             # print(sensitivity)
                     # kneedle.
 
-                    # kneedle.plot_knee()
-                    # plt.show()
+                    #kneedle.plot_knee()
+                    #plt.show()
                     RGB.append(int(kneedle.knee))
 
-                # print(RGB)
+                print(RGB)
 
                 return RGB
 
