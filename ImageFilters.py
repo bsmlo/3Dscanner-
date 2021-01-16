@@ -169,13 +169,15 @@ class ImageFilters:
                 mask_gr = np.logical_and(green_range, red_range)
                 mask_br = np.logical_and(blue_range, red_range)
 
-                all_mask = np.logical_or(mask_gr, mask_br)
+                #all_mask = np.logical_or(mask_gr, mask_br)
 
-                img_rgb_filter[np.logical_not(all_mask), 0] = 0
-                img_rgb_filter[np.logical_not(all_mask), 1] = 0
-                img_rgb_filter[np.logical_not(all_mask), 2] = 0
+                all_mask = np.logical_or(red_range, green_range, blue_range)
 
-                out_image = Image.fromarray(img_rgb_filter)
+                img_rgb_filter[np.logical_not(blue_range), 0] = 0
+                img_rgb_filter[np.logical_not(green_range), 1] = 0
+                img_rgb_filter[np.logical_not(red_range), 2] = 0
+
+                out_image = Image.fromarray(all_mask, mode='L')
 
                 return out_image
 
@@ -218,7 +220,9 @@ class ImageFilters:
 
         kernel_dil = np.ones((10, 10), np.uint8)
 
-        image_binary = morphology.opening(thin_image)
+        image_binary = morphology.closing(thin_image)
+
+        image_binary = morphology.opening(image_binary)
         # plt.imshow(image_binary)
         # plt.show()
 
@@ -376,9 +380,14 @@ class ImageFilters:
                     dff = np.diff(filtred[0])
                     ex = (np.array(filtred[1])[:-1] + np.array(filtred[1])[1:]) / 2
 
-                    sensitivity = 10
+
+                    sensitivity = 15
 
                     import matplotlib.pyplot as plt
+
+                    plt.plot(cdf3[1], cdf3[0])
+
+                    plt.show()
 
                     while True:
                         kneedle = KneeLocator(ex, dff, sensitivity, curve='convex', direction='increasing')
@@ -389,8 +398,8 @@ class ImageFilters:
                             # print(sensitivity)
                     # kneedle.
 
-                    #kneedle.plot_knee()
-                    #plt.show()
+                    kneedle.plot_knee()
+                    plt.show()
                     RGB.append(int(kneedle.knee))
 
                 print(RGB)

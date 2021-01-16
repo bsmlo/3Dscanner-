@@ -32,7 +32,7 @@ def visualisation():
 class Operations(EditHandler.EditHandler):
     def __init__(self):
         super().__init__()
-        self.images_patch = 'E:/Data/Dokumenty/Studia/Praca/MGR/Serie/Test31'
+        self.images_patch = 'E:/Data/Dokumenty/Studia/Praca/MGR/Serie/1-16'
 
     def image_show(self):
         image = EditHandler.EditHandler.actual_image(self)
